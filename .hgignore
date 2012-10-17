@@ -1,0 +1,7 @@
+syntax: glob
+*.pyc
+*~
+*.class
+*.core
+build
+doc/html
