@@ -12,6 +12,7 @@ Contents
    :maxdepth: 2
 
    install.rst
+   tutorial.rst
    news.rst
 
 Further readings:
