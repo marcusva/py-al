@@ -4,6 +4,7 @@ PYTHONPATH ?= $(top_srcdir)
 SUBDIRS = \
 	$(top_srcdir)/doc \
 	$(top_srcdir)/test \
+    $(top_srcdir)/test/util \
 	$(top_srcdir)/examples
 
 all: clean build
@@ -54,7 +55,7 @@ docs:
 
 release: dist
 runtest:
-	@PYTHONPATH=$(PYTHONPATH) $(PYTHON) -B openal/test/util/runtests.py
+	@PYTHONPATH=$(PYTHONPATH) $(PYTHON) -B test/util/runtests.py
 
 # Do not run these in production environments! They are for testing
 # purposes only!
@@ -75,17 +76,17 @@ installall:
 	@pypy1.9 setup.py install
 
 testall:
-	@rm -rf openal/test/*.pyc
-	@-PYTHONPATH=$(PYTHONPATH) python2.7 openal/test/util/runtests.py
-	@rm -rf openal/test/*.pyc
-	@-PYTHONPATH=$(PYTHONPATH) python3.1 openal/test/util/runtests.py
-	@rm -rf openal/test/*.pyc
-	@-PYTHONPATH=$(PYTHONPATH) python3.2 openal/test/util/runtests.py
-	@rm -rf openal/test/*.pyc
-	@-PYTHONPATH=$(PYTHONPATH) python3.3 openal/test/util/runtests.py
-	@rm -rf openal/test/*.pyc
-	@-PYTHONPATH=$(PYTHONPATH) pypy1.9 openal/test/util/runtests.py
-	@rm -rf openal/test/*.pyc
+	@rm -rf test/*.pyc
+	@-PYTHONPATH=$(PYTHONPATH) python2.7 test/util/runtests.py
+	@rm -rf test/*.pyc
+	@-PYTHONPATH=$(PYTHONPATH) python3.1 test/util/runtests.py
+	@rm -rf test/*.pyc
+	@-PYTHONPATH=$(PYTHONPATH) python3.2 test/util/runtests.py
+	@rm -rf test/*.pyc
+	@-PYTHONPATH=$(PYTHONPATH) python3.3 test/util/runtests.py
+	@rm -rf test/*.pyc
+	@-PYTHONPATH=$(PYTHONPATH) pypy1.9 test/util/runtests.py
+	@rm -rf test/*.pyc
 
 testpackage:
 	@python2.7 -c "import openal.test; openal.test.run()"

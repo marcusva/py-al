@@ -1,6 +1,5 @@
 Welcome to PyAL's documentation!
 ===================================
-
 PyAL is a wrapper around the OpenAL library and as such similar to the
 discontinued PyOpenAL project. In contrast to PyOpenAL, it has no licensing
 restrictions, nor does it rely on C code, but uses :mod:`ctypes` instead.
@@ -12,7 +11,9 @@ Contents
    :maxdepth: 2
 
    install.rst
-   tutorial.rst
+   integration.rst
+   openal.rst
+   openalaudio.rst
    news.rst
 
 Further readings:

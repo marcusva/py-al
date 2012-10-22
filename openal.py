@@ -97,7 +97,6 @@ def _findlib(libnames, path=None):
         if platform not in libnames:
             platform = "DEFAULT"
         searchfor = libnames[platform]
-
     results = []
     if path:
         for libname in searchfor:
@@ -411,7 +410,6 @@ class ALCdevice(ctypes.Structure):
 class ALCcontext(ctypes.Structure):
     """An execution context on a OpenAL device."""
     pass
-
 
 alcCreateContext = _bind("alcCreateContext", [ctypes.POINTER(ALCdevice),
                                               ctypes.POINTER(ALCint)],

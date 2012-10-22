@@ -22,7 +22,7 @@ if __name__ == "__main__":
         "author_email": "marcus@sysfault.org",
         "license": "Public Domain / zlib",
         "url": "http://code.google.com/p/pgreloaded",
-        "py_modules": ["openal"],
+        "py_modules": ["openal", "openalaudio"],
         "classifiers": [
             "Development Status :: 4 - Beta",
             "Intended Audience :: Developers",

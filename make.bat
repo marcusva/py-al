@@ -106,7 +106,7 @@
 @GOTO :eof
 
 :runtest
-@%PYTHON% openal\test\util\runtests.py
+@%PYTHON% test\util\runtests.py
 @GOTO :eof
 
 @REM Do not run these in production environments. They are for testing purposes
@@ -166,34 +166,34 @@
 
 :testall
 @FOR /F "tokens=1 delims=" %%A in ('CHDIR') do @SET PYTHONPATH=%%A && @SET IRONPYTHONPATH=%%A
-@%PYTHON27_X86% openal\test\util\runtests.py
-@DEL /Q openal\test\*.pyc
-@%PYTHON27_X64% openal\test\util\runtests.py
-@DEL /Q openal\test\*.pyc
-@%PYTHON31_X86% openal\test\util\runtests.py
-@DEL /Q openal\test\*.pyc
-@RMDIR /S /Q openal\test\__pycache__
-@%PYTHON31_X64% openal\test\util\runtests.py
-@DEL /Q openal\test\*.pyc
-@RMDIR /S /Q openal\test\__pycache__
-@%PYTHON32_X86% openal\test\util\runtests.py
-@DEL /Q openal\test\*.pyc
-@RMDIR /S /Q openal\test\__pycache__
-@%PYTHON32_X64% openal\test\util\runtests.py
-@DEL /Q openal\test\*.pyc
-@RMDIR /S /Q openal\test\__pycache__
-@%PYTHON33_X86% openal\test\util\runtests.py
-@DEL /Q openal\test\*.pyc
-@RMDIR /S /Q openal\test\__pycache__
-@%PYTHON33_X64% openal\test\util\runtests.py
-@DEL /Q openal\test\*.pyc
-@RMDIR /S /Q openal\test\__pycache__
-@%PYPY18% openal\test\util\runtests.py
-@DEL /Q openal\test\*.pyc
-@%PYPY19% openal\test\util\runtests.py
-@DEL /Q openal\test\*.pyc
-@%IRONPYTHON27% openal\test\util\runtests.py
-@DEL /Q openal\test\*.pyc
+@%PYTHON27_X86% test\util\runtests.py
+@DEL /Q test\*.pyc
+@%PYTHON27_X64% test\util\runtests.py
+@DEL /Q test\*.pyc
+@%PYTHON31_X86% test\util\runtests.py
+@DEL /Q test\*.pyc
+@RMDIR /S /Q test\__pycache__
+@%PYTHON31_X64% test\util\runtests.py
+@DEL /Q test\*.pyc
+@RMDIR /S /Q test\__pycache__
+@%PYTHON32_X86% test\util\runtests.py
+@DEL /Q test\*.pyc
+@RMDIR /S /Q test\__pycache__
+@%PYTHON32_X64% test\util\runtests.py
+@DEL /Q test\*.pyc
+@RMDIR /S /Q test\__pycache__
+@%PYTHON33_X86% test\util\runtests.py
+@DEL /Q test\*.pyc
+@RMDIR /S /Q test\__pycache__
+@%PYTHON33_X64% test\util\runtests.py
+@DEL /Q test\*.pyc
+@RMDIR /S /Q test\__pycache__
+@%PYPY18% test\util\runtests.py
+@DEL /Q test\*.pyc
+@%PYPY19% test\util\runtests.py
+@DEL /Q test\*.pyc
+@%IRONPYTHON27% test\util\runtests.py
+@DEL /Q test\*.pyc
 @GOTO :eof
 
 :testall2
