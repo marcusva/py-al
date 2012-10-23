@@ -1,4 +1,5 @@
 """ """
+from collections import Iterable
 from openal import *
 
 __all__ = ["SoundListener", "SoundSource", "SoundData", "SoundSink",
@@ -379,6 +380,42 @@ class SoundSink(object):
             self._sources[source] = sid
             self._sids[sid] = source
         return sid
+
+    def play(self, sources):
+        """Starts playing the buffered sounds of the source or sources."""
+        if isinstance(sources, Iterable):
+            sids = []
+            for source in sources:
+                sids.append(self._create_source_id(source))
+            alSourcePlayv(_to_ctypes(sids, ALuint), len(sids))
+        else:
+            sid = self._create_source_id(sources)
+            alSourcePlay(sid)
+
+    def stop(self, sources):
+        """Stops playing the buffered sounds of the source or sources."""
+        if isinstance(sources, Iterable):
+            sids = [sid for self._sources[source] if source in self._sources]
+            alSourceStopv(_to_ctypes(sids, ALuint), len(sids))
+        elif sources in self._sources:
+            alSourceStop(self._sources[source])
+
+    def pause(self, sources):
+        """Pauses the playback of the buffered sounds of the source or
+        sources."""
+        if isinstance(sources, Iterable):
+            sids = [sid for self._sources[source] if source in self._sources]
+            alSourcePausev(_to_ctypes(sids, ALuint), len(sids))
+        elif sources in self._sources:
+            alSourcePause(self._sources[source])
+
+    def rewind(self, sources):
+        """Rewinds the buffers of the source or sources."""
+        if isinstance(sources, Iterable):
+            sids = [sid for self._sources[source] if source in self._sources]
+            alSourceRewindv(_to_ctypes(sids, ALuint), len(sids))
+        elif sources in self._sources:
+            alSourceRewind(self._sources[source])
 
     def process_source(self, source):
         """Processes the passed SoundSource."""
