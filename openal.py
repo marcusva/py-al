@@ -1,4 +1,4 @@
-"""OpenAL AL and ALC wrapper"""
+"""OpenAL AL and ALC wrapper using ctypes"""
 import os
 import sys
 import ctypes
@@ -79,7 +79,7 @@ version_info = (0, 1, 0, "")
 
 
 def _findlib(libnames, path=None):
-    """."""
+    """Internal helper function to find the requested DLL(s)."""
     platform = sys.platform
     if platform in ("win32", "cli"):
         suffix = ".dll"
@@ -403,7 +403,7 @@ ALCvoid = None
 
 
 class ALCdevice(ctypes.Structure):
-    """An OpenAL device used for audio operations."""
+    """A OpenAL device used for audio operations."""
     pass
 
 

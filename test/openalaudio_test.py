@@ -5,7 +5,6 @@ from openalaudio import *
 
 
 class OpenALAudioTest(unittest.TestCase):
-
     def setUp(self):
         if sys.version.startswith("3.1"):
             self.assertIsInstance = \
@@ -33,7 +32,7 @@ class OpenALAudioTest(unittest.TestCase):
         self.assertIsNone(data.channels)
         self.assertIsNone(data.data)
         self.assertIsNone(data.bitrate)
-        # TODO: initialisers
+        # TODO: initializers
 
     def test_SoundData_frequency(self):
         data = SoundData()
@@ -150,7 +149,13 @@ class OpenALAudioTest(unittest.TestCase):
 
     def test_SoundSink(self):
         sink = SoundSink()
+        self.assertIsNotNone(sink.device)
+        self.assertIsNotNone(sink.context)
+        self.assertTrue(sink.opened_device)
+        #sink2 = SoundSink()
+        #self.assertEqual(sink2.device, sink.device)
         del sink
+
 
 if __name__ == "__main__":
     sys.exit(unittest.main())

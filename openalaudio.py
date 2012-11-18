@@ -1,4 +1,4 @@
-""" """
+"""Utility classes for OpenAL-based audio access."""
 from collections import Iterable
 from openal import *
 
@@ -26,6 +26,7 @@ _ERRMAP = {AL_NO_ERROR: "No Error",
            AL_OUT_OF_MEMORY: "Out of memory"
            }
 _get_error_message = lambda x: _ERRMAP.get(x, "Error code [%d]" % x)
+
 
 def _continue_or_raise():
     """Raises an OpenALError, if an error flag is set."""
@@ -167,9 +168,9 @@ def _set_source_value(sourceid, prop, value):
         value = to_ctypes(value, _Type)
     setter(sourceid, prop, value)
 
-# Public API
+
 class OpenALError(Exception):
-    """An OpenAL specific exception class."""
+    """A OpenAL specific exception class."""
     def __init__(self, msg=None):
         """Creates a new OpenALError instance with the specified message.
 
@@ -297,7 +298,7 @@ class SoundSource(object):
 
     @property
     def changed(self):
-        """Indicates, if one or more properties changed since the last
+        """Indicates, that one or more properties changed since the last
         update."""
         return len(self.changedproperties) != 0
 
@@ -316,21 +317,25 @@ class SoundSink(object):
             self._deviceopened = False
         else:
             self._deviceopened = True
-            self.device = alcOpenDevice(device)
-            if self.device is None:
+            device = alcOpenDevice(device)
+            if device is None:
                 raise OpenALError()
+            self.device = device.contents
         if attributes:
             attributes = _to_ctypes(attributes, ALCint)
-        self.context = alcCreateContext(device, attributes)
-        if self.context is None:
+        context = alcCreateContext(device, attributes)
+        if not context:
             raise OpenALError()
-
+        self.context = context.contents
+        
         self._sources = {}
         self._sids = {}
         self._listener = None
 
     def __del__(self):
-        alcDestroyContext(self.context)
+        context = getattr(self, "context", None)
+        if context:
+            alcDestroyContext(context)
         self.context = None
         if self._deviceopened:
             alcCloseDevice(self.device)
@@ -353,6 +358,11 @@ class SoundSink(object):
         """Gets or sets the SoundListener of the SoundSink."""
         self._listener = value
 
+    @property
+    def opened_device(self):
+        """Gets, whether the SoundSink initially opened the device."""
+        return self._deviceopened
+
     def refresh(self, source):
         """Refreshes the passed SoundSource's internal state."""
         sid = self._sources.get(source, None)
@@ -365,20 +375,19 @@ class SoundSink(object):
         """Creates a OpenAL source id for the passed SoundSource."""
         if source in self._sources:
             # We should have a OpenAL source id already
-            sid = self._sources[source]
-        else:
-            # None yet, create a new one or bind it to an existing id
-            sid = None
-            for p, v in self._sids.items():
-                if v is None:
-                    # Unused sid, use that one
-                    sid = p
-            else:
-                sid = ALuint()
-                alGenSources(1, sid)
-                _continue_or_raise()
-            self._sources[source] = sid
-            self._sids[sid] = source
+            return self._sources[source]
+        # None yet, create a new one or bind it to an existing id
+        sid = None
+        for p, v in self._sids.items():
+            if v is None:
+                # Unused sid, use that one
+                sid = p
+        if not sid:
+            sid = ALuint()
+            alGenSources(1, sid)
+            _continue_or_raise()
+        self._sources[source] = sid
+        self._sids[sid] = source
         return sid
 
     def play(self, sources):
@@ -395,7 +404,8 @@ class SoundSink(object):
     def stop(self, sources):
         """Stops playing the buffered sounds of the source or sources."""
         if isinstance(sources, Iterable):
-            sids = [sid for self._sources[source] if source in self._sources]
+            sids = [self._sources[source] for source in sources
+                    if source in self._sources]
             alSourceStopv(_to_ctypes(sids, ALuint), len(sids))
         elif sources in self._sources:
             alSourceStop(self._sources[source])
@@ -404,7 +414,8 @@ class SoundSink(object):
         """Pauses the playback of the buffered sounds of the source or
         sources."""
         if isinstance(sources, Iterable):
-            sids = [sid for self._sources[source] if source in self._sources]
+            sids = [self._sources[source] for source in sources
+                    if source in self._sources]
             alSourcePausev(_to_ctypes(sids, ALuint), len(sids))
         elif sources in self._sources:
             alSourcePause(self._sources[source])
@@ -412,7 +423,8 @@ class SoundSink(object):
     def rewind(self, sources):
         """Rewinds the buffers of the source or sources."""
         if isinstance(sources, Iterable):
-            sids = [sid for self._sources[source] if source in self._sources]
+            sids = [self._sources[source] for source in sources
+                    if source in self._sources]
             alSourceRewindv(_to_ctypes(sids, ALuint), len(sids))
         elif sources in self._sources:
             alSourceRewind(self._sources[source])
@@ -426,7 +438,16 @@ class SoundSink(object):
             _set_source_value(sid, prop, source.dataproperties[prop])
         source.changedproperties = []
 
+    def process_listener(self):
+        """Processes the SoundListener attached to the SoundSink."""
+        props = getattr(self.listener, "changedproperties", [])
+        for prop in props:
+            _set_listener_value(prop, self.listener.dataproperties[prop])
+        self.listener.changedproperties = []
+        
     def update(self):
         """Processes all currently attached sound sources."""
+        self.process_listener()
+        process_source = self.process_source
         for source in self._sources:
-            self.process_source(source)
+            process_source(source)
