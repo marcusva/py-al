@@ -3,7 +3,6 @@
 ##
 """Utility functions for the tests."""
 import os
-import sys
 try:
     import StringIO
 except ImportError:

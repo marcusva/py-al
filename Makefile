@@ -55,7 +55,7 @@ docs:
 
 release: dist
 runtest:
-	@PYTHONPATH=$(PYTHONPATH) $(PYTHON) -B test/util/runtests.py
+	@PYTHONPATH=$(PYTHONPATH) $(PYTHON) -B -m test.util.runtests
 
 # Do not run these in production environments! They are for testing
 # purposes only!
@@ -76,24 +76,11 @@ installall:
 	@pypy1.9 setup.py install
 
 testall:
-	@rm -rf test/*.pyc
-	@-PYTHONPATH=$(PYTHONPATH) python2.7 test/util/runtests.py
-	@rm -rf test/*.pyc
-	@-PYTHONPATH=$(PYTHONPATH) python3.1 test/util/runtests.py
-	@rm -rf test/*.pyc
-	@-PYTHONPATH=$(PYTHONPATH) python3.2 test/util/runtests.py
-	@rm -rf test/*.pyc
-	@-PYTHONPATH=$(PYTHONPATH) python3.3 test/util/runtests.py
-	@rm -rf test/*.pyc
-	@-PYTHONPATH=$(PYTHONPATH) pypy1.9 test/util/runtests.py
-	@rm -rf test/*.pyc
-
-testpackage:
-	@python2.7 -c "import openal.test; openal.test.run()"
-	@python3.1 -c "import openal.test; openal.test.run()"
-	@python3.2 -c "import openal.test; openal.test.run()"
-	@python3.3 -c "import openal.test; openal.test.run()"
-	@pypy1.9 -c "import openal.test; openal.test.run()"
+	@-PYTHONPATH=$(PYTHONPATH) python2.7 -B -m test.util.runtests
+	@-PYTHONPATH=$(PYTHONPATH) python3.1 -B -m test.util.runtests
+	@-PYTHONPATH=$(PYTHONPATH) python3.2 -B -m test.util.runtests
+	@-PYTHONPATH=$(PYTHONPATH) python3.3 -B -m test.util.runtests
+	@-PYTHONPATH=$(PYTHONPATH) pypy1.9 -B -m test.util.runtests
 
 purge_installs:
 	rm -rf /usr/local/lib/python2.7/site-packages/openal*

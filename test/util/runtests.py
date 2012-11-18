@@ -12,11 +12,11 @@ import random
 import subprocess
 import time
 
-try:
-    from pygame2.test.util import support, testrunner
-except:
-    import support
-    import testrunner
+#try:
+from . import support, testrunner
+#except:
+#    import support
+#    import testrunner
 
 if sys.version_info[0] >= 3:
     MAXINT = sys.maxsize
@@ -120,7 +120,7 @@ def create_options():
 
 def gettestfiles(testdir=None, randomizer=None):
     """Get all test files from the passed test directory. If none is
-    passed, use the default pygame2 test directory.
+    passed, use the default test directory.
     """
     if not testdir:
         testdir = os.path.dirname(__file__)
