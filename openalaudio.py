@@ -422,7 +422,6 @@ class SoundSink(object):
             alGenSources(1, sid)
             _continue_or_raise()
         self._sources[source] = sid.value
-        print 
         self._sids[sid.value] = source
         return sid.value
 
