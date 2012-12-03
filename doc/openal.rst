@@ -51,7 +51,7 @@ A brief example in C code::
 
 Doing the same in Python: ::
 
-    from openal import *    # imports all relevant AL and ALC functions)
+    from openal import *    # imports all relevant AL and ALC functions
     
     def main():
         source = ALuint()

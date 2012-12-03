@@ -12,7 +12,7 @@ version_info = (0, 1, 0, "")
 
 
 # Helper functions
-_to_ctypes = lambda seq, dtype: (len(dataseq) * dtype)(*dataseq)
+_to_ctypes = lambda seq, dtype: (len(seq) * dtype)(*seq)
 _to_python = lambda seq: [x.value for x in seq]
 
 
@@ -127,7 +127,7 @@ def _set_listener_value(prop, value):
     """Sets a OpenAL listener property value."""
     size, _Type, setter, getter = _LISTENERCALLBACKS[prop]
     if size > 1:
-        value = to_ctypes(value, _Type)
+        value = _to_ctypes(value, _Type)
     setter(prop, value)
 
 
@@ -163,9 +163,9 @@ def _get_source_value(sourceid, prop):
     return v
 def _set_source_value(sourceid, prop, value):
     """Sets a OpenAL source property value."""
-    size, _Type, setter, getter = _LISTENERCALLBACKS[prop]
+    size, _Type, setter, getter = _SOURCECALLBACKS[prop]
     if size > 1:
-        value = to_ctypes(value, _Type)
+        value = _to_ctypes(value, _Type)
     setter(sourceid, prop, value)
 
 
@@ -201,13 +201,39 @@ class SoundData(object):
         self.bitrate = bitrate
         self.size = size
         self.frequency = frequency
-        self.data = data
+        self._data = data
 
+    @property
+    def data(self):
+        """The PCM audio data."""
+        return self._data
+
+class StreamingSoundData(SoundData):
+    """A streaming audio object.
+    
+    The StreamingSoundData consists of a PCM audio stream, the audio frequency
+    and format information. It reads and fills a buffer automatically on
+    underruns.
+    """
+    def __init__(self, stream=None, channels=None, bitrate=None, size=None,
+                 frequency=None):
+        """Creates a new StreamingSoundData object."""
+        super(StreamingSoundData, self).__init__(None, channels, bitrate,
+                                                 size, frequency)
+
+    def read(self, size):
+        pass
+    
+    def seek(self, position):
+        pass
+
+    def data(self):
+        pass
 
 class SoundListener(object):
     """A listener object within the 3D audio space."""
-    def __init__(self, position=(0, 0, 0), velocity=(0, 0, 0),
-                 orientation=(0, 0, -1, 0, 1, 0)):
+    def __init__(self, position=[0, 0, 0], velocity=[0, 0, 0],
+                 orientation=[0, 0, -1, 0, 1, 0]):
         """Creates a new SoundListener with a specific position, movement
         velocity and hearing orientation."""
         self.dataproperties = {}
@@ -256,8 +282,9 @@ class SoundListener(object):
 
 class SoundSource(object):
     """An object within the application world, which can emit sounds."""
-    def __init__(self, gain=1.0, pitch=1.0, position=(0, 0, 0),
-                 velocity=(0, 0, 0)):
+    def __init__(self, gain=1.0, pitch=1.0, position=[0, 0, 0],
+                 velocity=[0, 0, 0]):
+        self.bufferqueue = []
         self.dataproperties = {}
         self.dataproperties[AL_GAIN] = gain
         self.dataproperties[AL_PITCH] = pitch
@@ -266,7 +293,7 @@ class SoundSource(object):
         self.changedproperties = [AL_GAIN, AL_PITCH, AL_POSITION, AL_VELOCITY]
 
     def __getattr__(self, name):
-        if name in ("dataproperties", "changedproperties"):
+        if name in ("dataproperties", "changedproperties", "bufferqueue"):
             return super(SoundSource, self).__getattr__(name, value)
         dprop = _SOURCEPROPMAP.get(name, None)
         if dprop is None:
@@ -277,7 +304,7 @@ class SoundSource(object):
         return self.dataproperties.get(dprop, None)
 
     def __setattr__(self, name, value):
-        if name in ("dataproperties", "changedproperties"):
+        if name in ("dataproperties", "changedproperties", "bufferqueue"):
             return super(SoundSource, self).__setattr__(name, value)
         dprop = _SOURCEPROPMAP.get(name, None)
         if dprop is None:
@@ -288,7 +315,7 @@ class SoundSource(object):
             self.changedproperties.append(dprop)
 
     def __delattr__(self, name):
-        if name in ("dataproperties", "changedproperties"):
+        if name in ("dataproperties", "changedproperties", "bufferqueue"):
             return super(SoundSource, self).__delattr__(name, value)
         dprop = _SOURCEPROPMAP.get(name, None)
         if dprop is None:
@@ -301,6 +328,14 @@ class SoundSource(object):
         """Indicates, that one or more properties changed since the last
         update."""
         return len(self.changedproperties) != 0
+
+    def queue(self, sounddata):
+        """Adds a SoundData object for playback to the SoundSource."""
+        self.bufferqueue.append(sounddata)
+
+    def play(self, sounddata):
+        """Adds a SoundData object for playback to the SoundSource."""
+        self.queue(sounddata)
 
 
 class SoundSink(object):
@@ -344,7 +379,7 @@ class SoundSink(object):
     def activate(self):
         """Marks the SoundSink as being the current one for operating on
         the OpenAL states."""
-        alMakeContextCurrent(self.context)
+        alcMakeContextCurrent(self.context)
 
     @property
     def listener(self):
@@ -386,9 +421,10 @@ class SoundSink(object):
             sid = ALuint()
             alGenSources(1, sid)
             _continue_or_raise()
-        self._sources[source] = sid
-        self._sids[sid] = source
-        return sid
+        self._sources[source] = sid.value
+        print 
+        self._sids[sid.value] = source
+        return sid.value
 
     def play(self, sources):
         """Starts playing the buffered sounds of the source or sources."""

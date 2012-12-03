@@ -3,14 +3,14 @@ import os
 import sys
 import time
 import wave
-import openalaudio
+from openalaudio import *
 
 def run():
     if len (sys.argv) < 2:
         print ("Usage: %s wavefile" % os.path.basename(sys.argv[0]))
         print ("    Using an example wav file...")
         dirname = os.path.dirname(__file__)
-        fname = os.path.join(dirname, "swoosh.wav")
+        fname = os.path.join(dirname, "hey.wav")
     else:
         fname = sys.argv[1]
 
@@ -23,8 +23,8 @@ def run():
     sink = SoundSink()
     sink.activate()
 
-    source = SoundSource(position=(10, 0, 0))
-    source.looping = 1
+    source = SoundSource(position=[0, 0, 0])
+    source.looping = True
 
     data = SoundData(wavbuf, channels, bitrate, len(wavbuf), samplerate)
     source.queue(data)
@@ -32,7 +32,8 @@ def run():
     sink.play(source)
     while source.position[0] > -10:
         source.position[0] -= 1
-        sink.process()
+        sink.update()
+        print("playing at %r" % source.position)
         time.sleep(1)
     print("done")
 
