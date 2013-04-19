@@ -1,6 +1,9 @@
 """Utility classes for OpenAL-based audio access."""
 from collections import Iterable
-from openal import *
+import ctypes
+import os
+from . import al, alc
+
 
 __all__ = ["SoundListener", "SoundSource", "SoundData", "SoundSink",
            "OpenALError",
@@ -17,74 +20,73 @@ _to_python = lambda seq: [x.value for x in seq]
 
 
 # Error handling
-_clear_error = lambda: alGetError()
-_ERRMAP = {AL_NO_ERROR: "No Error",
-           AL_INVALID_NAME: "Invalid name",
-           AL_INVALID_ENUM: "Invalid enum",
-           AL_INVALID_VALUE: "Invalid value",
-           AL_INVALID_OPERATION: "Invalid operation",
-           AL_OUT_OF_MEMORY: "Out of memory"
+_ERRMAP = {al.AL_NO_ERROR: "No Error",
+           al.AL_INVALID_NAME: "Invalid name",
+           al.AL_INVALID_ENUM: "Invalid enum",
+           al.AL_INVALID_VALUE: "Invalid value",
+           al.AL_INVALID_OPERATION: "Invalid operation",
+           al.AL_OUT_OF_MEMORY: "Out of memory"
            }
 _get_error_message = lambda x: _ERRMAP.get(x, "Error code [%d]" % x)
 
 
 def _continue_or_raise():
     """Raises an OpenALError, if an error flag is set."""
-    err = alGetError()
-    if err != AL_NO_ERROR:
-        raise OpenALError(get_error_message(err))
+    err = al.alGetError()
+    if err != al.AL_NO_ERROR:
+        raise OpenALError(_get_error_message(err))
 
 
 # Property update handling on SoundListener, SoundData and SoundSource
 _SOURCEPROPMAP = {
-    "pitch": AL_PITCH,
-    "gain": AL_GAIN,
-    "max_distance": AL_MAX_DISTANCE,
-    "rolloff_factor": AL_ROLLOFF_FACTOR,
-    "reference_distance": AL_REFERENCE_DISTANCE,
-    "min_gain": AL_MIN_GAIN,
-    "max_gain": AL_MAX_GAIN,
-    "cone_outer_gain": AL_CONE_OUTER_GAIN,
-    "cone_inner_angle": AL_CONE_INNER_ANGLE,
-    "cone_outer_angle": AL_CONE_OUTER_ANGLE,
-    "position": AL_POSITION,
-    "velocity": AL_VELOCITY,
-    "direction": AL_DIRECTION,
-    "source_relative": AL_SOURCE_RELATIVE,
-    "source_type": AL_SOURCE_TYPE,
-    "looping": AL_LOOPING,
-    "buffer": AL_BUFFER,
-    "source_state": AL_SOURCE_STATE,
-    "sec_offset": AL_SEC_OFFSET,
-    "sample_offset": AL_SAMPLE_OFFSET,
-    "byte_offset": AL_BYTE_OFFSET,
-    "buffers_queued": AL_BUFFERS_QUEUED,
-    "buffers_processed": AL_BUFFERS_PROCESSED,
+    "pitch": al.AL_PITCH,
+    "gain": al.AL_GAIN,
+    "max_distance": al.AL_MAX_DISTANCE,
+    "rolloff_factor": al.AL_ROLLOFF_FACTOR,
+    "reference_distance": al.AL_REFERENCE_DISTANCE,
+    "min_gain": al.AL_MIN_GAIN,
+    "max_gain": al.AL_MAX_GAIN,
+    "cone_outer_gain": al.AL_CONE_OUTER_GAIN,
+    "cone_inner_angle": al.AL_CONE_INNER_ANGLE,
+    "cone_outer_angle": al.AL_CONE_OUTER_ANGLE,
+    "position": al.AL_POSITION,
+    "velocity": al.AL_VELOCITY,
+    "direction": al.AL_DIRECTION,
+    "source_relative": al.AL_SOURCE_RELATIVE,
+    "source_type": al.AL_SOURCE_TYPE,
+    "looping": al.AL_LOOPING,
+    "buffer": al.AL_BUFFER,
+    "source_state": al.AL_SOURCE_STATE,
+    "sec_offset": al.AL_SEC_OFFSET,
+    "sample_offset": al.AL_SAMPLE_OFFSET,
+    "byte_offset": al.AL_BYTE_OFFSET,
+    "buffers_queued": al.AL_BUFFERS_QUEUED,
+    "buffers_processed": al.AL_BUFFERS_PROCESSED,
     }
 
 _LISTENERPROPMAP = {
     # Listener properties
-    "orientation": AL_ORIENTATION,
-    "position": AL_POSITION,
-    "velocity": AL_VELOCITY,
-    "gain": AL_GAIN,
+    "orientation": al.AL_ORIENTATION,
+    "position": al.AL_POSITION,
+    "velocity": al.AL_VELOCITY,
+    "gain": al.AL_GAIN,
     }
 
 _BUFFERPROPMAP = {
     # Buffer properties
-    "frequency": AL_FREQUENCY,
-    "bits": AL_BITS,
-    "channels": AL_CHANNELS,
-    "size": AL_SIZE,
+    "frequency": al.AL_FREQUENCY,
+    "bits": al.AL_BITS,
+    "channels": al.AL_CHANNELS,
+    "size": al.AL_SIZE,
     }
 
 _CTXPROPMAP = {
     # Context Manager properties
-    "frequency": ALC_FREQUENCY,
-    "mono_sources": ALC_MONO_SOURCES,
-    "stereo_sources": ALC_STEREO_SOURCES,
-    "refresh": ALC_REFRESH,
-    "sync": ALC_SYNC,
+    "frequency": alc.ALC_FREQUENCY,
+    "mono_sources": alc.ALC_MONO_SOURCES,
+    "stereo_sources": alc.ALC_STEREO_SOURCES,
+    "refresh": alc.ALC_REFRESH,
+    "sync": alc.ALC_SYNC,
     }
 
 # The callbacks are
@@ -95,10 +97,10 @@ _CTXPROPMAP = {
 # everything in properties, without interacting with OpenAL.
 #
 _BUFFERCALLBACKS = {
-        AL_FREQUENCY: (ALint, alBufferi, alGetBufferi),
-        AL_BITS: (ALint, alBufferi, alGetBufferi),
-        AL_CHANNELS: (ALint, alBufferi, alGetBufferi),
-        AL_SIZE: (ALint, alBufferi, alGetBufferi),
+        al.AL_FREQUENCY: (al.ALint, al.alBufferi, al.alGetBufferi),
+        al.AL_BITS: (al.ALint, al.alBufferi, al.alGetBufferi),
+        al.AL_CHANNELS: (al.ALint, al.alBufferi, al.alGetBufferi),
+        al.AL_SIZE: (al.ALint, al.alBufferi, al.alGetBufferi),
         }
 def _get_buffer_value(bufid, prop):
     """Gets the requested OpenAL buffer property value."""
@@ -111,11 +113,30 @@ def _set_buffer_value(bufid, prop, value):
     _BUFFERCALLBACKS[prop][1](bufid, prop, value)
 
 
+def add_buffer_extension(propname, proptype, valuetype, getter, setter):
+    """Binds a OpenAL buffer extension to all newly created SoundData/buffer
+    instances. Returns True, if the AL buffer extension is supported, False
+    otherwise."""
+    propname = propname.upper()
+    if propname.startswith("al.AL_"):
+        pname = propname[3:]
+    else:
+        pname = propname
+        propname = "al.AL_%s" % propname
+    if al.alIsExtensionPresent(pname) == al.AL_FALSE:
+        return False
+
+    global _BUFFERCALLBACKS
+    global _BUFFERPROPMAP
+    _BUFFERCALLBACKS[proptype] = (valuetype, getter, setter)
+    _BUFFERPROPMAP[propname] = proptype
+    return True
+
 _LISTENERCALLBACKS = {
-        AL_GAIN: (1, ALfloat, alListenerf, alListenerf, 1),
-        AL_POSITION: (3, ALfloat, alListenerfv, alGetListenerfv),
-        AL_VELOCITY: (3, ALfloat, alListenerfv, alGetListenerfv),
-        AL_ORIENTATION: (6, ALfloat, alListenerfv, alGetListenerfv),
+        al.AL_GAIN: (1, al.ALfloat, al.alListenerf, al.alListenerf),
+        al.AL_POSITION: (3, al.ALfloat, al.alListenerfv, al.alGetListenerfv),
+        al.AL_VELOCITY: (3, al.ALfloat, al.alListenerfv, al.alGetListenerfv),
+        al.AL_ORIENTATION: (6, al.ALfloat, al.alListenerfv, al.alGetListenerfv),
         }
 def _get_listener_value(prop):
     """Gets the requested OpenAL listener property value."""
@@ -131,29 +152,50 @@ def _set_listener_value(prop, value):
     setter(prop, value)
 
 
+def add_listener_extension(propname, proptype, vcount, valuetype, getter,
+                           setter):
+    """Binds a OpenAL listener extension to all newly created SoundListener
+    instances. Returns True, if the listener extension is supported, False
+    otherwise."""
+    propname = propname.upper()
+    if propname.startswith("al.AL_"):
+        pname = propname[3:]
+    else:
+        pname = propname
+        propname = "al.AL_%s" % propname
+    if al.alIsExtensionPresent(pname) == al.AL_FALSE:
+        return False
+
+    global _LISTENERCALLBACKS
+    global _LISTENERPROPMAP
+    _LISTENERCALLBACKS[proptype] = (vcount, valuetype, getter, setter)
+    _LISTENERPROPMAP[propname] = proptype
+    return True
+
+
 _SOURCECALLBACKS = {
-        AL_PITCH: (1, ALfloat, alSourcef, alGetSourcef),
-        AL_GAIN: (1, ALfloat, alSourcef, alGetSourcef),
-        AL_MAX_DISTANCE: (1, ALfloat, alSourcef, alGetSourcef),
-        AL_ROLLOFF_FACTOR: (1, ALfloat, alSourcef, alGetSourcef),
-        AL_REFERENCE_DISTANCE: (1, ALfloat, alSourcef, alGetSourcef),
-        AL_MIN_GAIN: (1, ALfloat, alSourcef, alGetSourcef),
-        AL_MAX_GAIN: (1, ALfloat, alSourcef, alGetSourcef),
-        AL_CONE_OUTER_GAIN: (1, ALfloat, alSourcef, alGetSourcef),
-        AL_CONE_INNER_ANGLE: (1, ALfloat, alSourcef, alGetSourcef),
-        AL_CONE_OUTER_ANGLE: (1, ALfloat, alSourcef, alGetSourcef),
-        AL_POSITION: (3, ALfloat, alSourcefv, alGetSourcefv),
-        AL_VELOCITY: (3, ALfloat, alSourcefv, alGetSourcefv),
-        AL_DIRECTION: (3, ALfloat, alSourcefv, alGetSourcefv),
-        AL_SOURCE_RELATIVE: (1, ALint, alSourcei, alGetSourcei),
-        AL_SOURCE_TYPE: (1, ALint, alSourcei, alGetSourcei),
-        AL_LOOPING: (1, ALint, alSourcei, alGetSourcei),
-        AL_SOURCE_STATE: (1, ALint, alSourcei, alGetSourcei),
-        AL_BUFFERS_QUEUED: (1, ALint, None, alGetSourcei),
-        AL_BUFFERS_PROCESSED: (1, ALint, None, alGetSourcei),
-        AL_SEC_OFFSET: (1, ALfloat, alSourcef, alGetSourcef),
-        AL_SAMPLE_OFFSET: (1, ALfloat, alSourcef, alGetSourcef),
-        AL_BYTE_OFFSET: (1, ALfloat, alSourcef, alGetSourcef),
+        al.AL_PITCH: (1, al.ALfloat, al.alSourcef, al.alGetSourcef),
+        al.AL_GAIN: (1, al.ALfloat, al.alSourcef, al.alGetSourcef),
+        al.AL_MAX_DISTANCE: (1, al.ALfloat, al.alSourcef, al.alGetSourcef),
+        al.AL_ROLLOFF_FACTOR: (1, al.ALfloat, al.alSourcef, al.alGetSourcef),
+        al.AL_REFERENCE_DISTANCE: (1, al.ALfloat, al.alSourcef, al.alGetSourcef),
+        al.AL_MIN_GAIN: (1, al.ALfloat, al.alSourcef, al.alGetSourcef),
+        al.AL_MAX_GAIN: (1, al.ALfloat, al.alSourcef, al.alGetSourcef),
+        al.AL_CONE_OUTER_GAIN: (1, al.ALfloat, al.alSourcef, al.alGetSourcef),
+        al.AL_CONE_INNER_ANGLE: (1, al.ALfloat, al.alSourcef, al.alGetSourcef),
+        al.AL_CONE_OUTER_ANGLE: (1, al.ALfloat, al.alSourcef, al.alGetSourcef),
+        al.AL_POSITION: (3, al.ALfloat, al.alSourcefv, al.alGetSourcefv),
+        al.AL_VELOCITY: (3, al.ALfloat, al.alSourcefv, al.alGetSourcefv),
+        al.AL_DIRECTION: (3, al.ALfloat, al.alSourcefv, al.alGetSourcefv),
+        al.AL_SOURCE_RELATIVE: (1, al.ALint, al.alSourcei, al.alGetSourcei),
+        al.AL_SOURCE_TYPE: (1, al.ALint, al.alSourcei, al.alGetSourcei),
+        al.AL_LOOPING: (1, al.ALint, al.alSourcei, al.alGetSourcei),
+        al.AL_SOURCE_STATE: (1, al.ALint, al.alSourcei, al.alGetSourcei),
+        al.AL_BUFFERS_QUEUED: (1, al.ALint, None, al.alGetSourcei),
+        al.AL_BUFFERS_PROCESSED: (1, al.ALint, None, al.alGetSourcei),
+        al.AL_SEC_OFFSET: (1, al.ALfloat, al.alSourcef, al.alGetSourcef),
+        al.AL_SAMPLE_OFFSET: (1, al.ALfloat, al.alSourcef, al.alGetSourcef),
+        al.AL_BYTE_OFFSET: (1, al.ALfloat, al.alSourcef, al.alGetSourcef),
         }
 def _get_source_value(sourceid, prop):
     """Gets the requested OpenAL source property value."""
@@ -169,6 +211,26 @@ def _set_source_value(sourceid, prop, value):
     setter(sourceid, prop, value)
 
 
+def add_source_extension(propname, proptype, vcount, valuetype, getter, setter):
+    """Binds a OpenAL source extension to all newly created SoundSource
+    instances. Returns True, if the AL source extension is supported, False
+    otherwise."""
+    propname = propname.upper()
+    if propname.startswith("al.AL_"):
+        pname = propname[3:]
+    else:
+        pname = propname
+        propname = "al.AL_%s" % propname
+    if al.alIsExtensionPresent(pname) == al.AL_FALSE:
+        return False
+
+    global _SOURCECALLBACKS
+    global _SOURCEPROPMAP
+    _SOURCECALLBACKS[proptype] = (vcount, valuetype, getter, setter)
+    _SOURCEPROPMAP[propname] = proptype
+    return True
+
+
 class OpenALError(Exception):
     """A OpenAL specific exception class."""
     def __init__(self, msg=None):
@@ -181,7 +243,7 @@ class OpenALError(Exception):
         self.msg = msg
         self.errcode = -1
         if msg is None:
-            self.errcode = alGetError()
+            self.errcode = al.alGetError()
             self.msg = _get_error_message(self.errcode)
 
     def __str__(self):
@@ -195,22 +257,26 @@ class SoundData(object):
     and format information.
     """
     def __init__(self, data=None, channels=None, bitrate=None, size=None,
-                 frequency=None):
+                 frequency=None, dformat=None):
         """Creates a new SoundData object."""
         self.channels = channels
         self.bitrate = bitrate
         self.size = size
         self.frequency = frequency
-        self._data = data
+        self.data = data
+        if dformat is None:
+            formatmap = {(1, 8) : al.AL_FORMAT_MONO8,
+                         (2, 8) : al.AL_FORMAT_STEREO8,
+                         (1, 16): al.AL_FORMAT_MONO16,
+                         (2, 16) : al.AL_FORMAT_STEREO16
+                         }
+            dformat = formatmap.get((channels, bitrate), None)
+        self.format = dformat
 
-    @property
-    def data(self):
-        """The PCM audio data."""
-        return self._data
 
 class StreamingSoundData(SoundData):
     """A streaming audio object.
-    
+
     The StreamingSoundData consists of a PCM audio stream, the audio frequency
     and format information. It reads and fills a buffer automatically on
     underruns.
@@ -218,17 +284,19 @@ class StreamingSoundData(SoundData):
     def __init__(self, stream=None, channels=None, bitrate=None, size=None,
                  frequency=None):
         """Creates a new StreamingSoundData object."""
-        super(StreamingSoundData, self).__init__(None, channels, bitrate,
+        super(StreamingSoundData, self).__init__(stream, channels, bitrate,
                                                  size, frequency)
+        self.streaming = True
 
-    def read(self, size):
-        pass
-    
-    def seek(self, position):
-        pass
+    def read(self, size=None):
+        return self.data.read(size)
 
-    def data(self):
-        pass
+    def seek(self, offset, whence=os.SEEK_SET):
+        self.data.seek(offset, whence)
+
+    def tell(self):
+        return self.data.tell()
+
 
 class SoundListener(object):
     """A listener object within the 3D audio space."""
@@ -237,14 +305,14 @@ class SoundListener(object):
         """Creates a new SoundListener with a specific position, movement
         velocity and hearing orientation."""
         self.dataproperties = {}
-        self.dataproperties[AL_POSITION] = position
-        self.dataproperties[AL_VELOCITY] = velocity
-        self.dataproperties[AL_ORIENTATION] = orientation
-        self.changedproperties = [AL_POSITION, AL_VELOCITY, AL_ORIENTATION]
+        self.dataproperties[al.AL_POSITION] = position
+        self.dataproperties[al.AL_VELOCITY] = velocity
+        self.dataproperties[al.AL_ORIENTATION] = orientation
+        self.changedproperties = [al.AL_POSITION, al.AL_VELOCITY, al.AL_ORIENTATION]
 
     def __getattr__(self, name):
         if name in ("dataproperties", "changedproperties"):
-            return super(SoundListener, self).__getattr__(name, value)
+            return super(SoundListener, self).__getattr__(name)
         dprop = _LISTENERPROPMAP.get(name, None)
         if dprop is None:
             raise AttributeError("object %r has no attribute %r" % \
@@ -266,7 +334,7 @@ class SoundListener(object):
 
     def __delattr__(self, name):
         if name in ("dataproperties", "changedproperties"):
-            return super(SoundListener, self).__delattr__(name, value)
+            return super(SoundListener, self).__delattr__(name)
         dprop = _LISTENERPROPMAP.get(name, None)
         if dprop is None:
             raise AttributeError("object %r has no attribute %r" % \
@@ -286,15 +354,15 @@ class SoundSource(object):
                  velocity=[0, 0, 0]):
         self.bufferqueue = []
         self.dataproperties = {}
-        self.dataproperties[AL_GAIN] = gain
-        self.dataproperties[AL_PITCH] = pitch
-        self.dataproperties[AL_POSITION] = position
-        self.dataproperties[AL_VELOCITY] = velocity
-        self.changedproperties = [AL_GAIN, AL_PITCH, AL_POSITION, AL_VELOCITY]
+        self.dataproperties[al.AL_GAIN] = gain
+        self.dataproperties[al.AL_PITCH] = pitch
+        self.dataproperties[al.AL_POSITION] = position
+        self.dataproperties[al.AL_VELOCITY] = velocity
+        self.changedproperties = [al.AL_GAIN, al.AL_PITCH, al.AL_POSITION, al.AL_VELOCITY]
 
     def __getattr__(self, name):
         if name in ("dataproperties", "changedproperties", "bufferqueue"):
-            return super(SoundSource, self).__getattr__(name, value)
+            return super(SoundSource, self).__getattr__(name)
         dprop = _SOURCEPROPMAP.get(name, None)
         if dprop is None:
             raise AttributeError("object %r has no attribute %r" % \
@@ -316,7 +384,7 @@ class SoundSource(object):
 
     def __delattr__(self, name):
         if name in ("dataproperties", "changedproperties", "bufferqueue"):
-            return super(SoundSource, self).__delattr__(name, value)
+            return super(SoundSource, self).__delattr__(name)
         dprop = _SOURCEPROPMAP.get(name, None)
         if dprop is None:
             raise AttributeError("object %r has no attribute %r" % \
@@ -345,41 +413,45 @@ class SoundSink(object):
     audio output device and manages the source settings, buffer queues and
     the playback of them.
     """
+    MAX_BUFFERS_PER_SOURCE = 10
+    MAX_BUFFER_SIZE = 48000
+
     def __init__(self, device=None, attributes=None):
         """Creates a new SoundSink for a specific audio output device."""
-        if isinstance(device, ALCdevice):
+        if isinstance(device, alc.ALCdevice):
             self.device = device
             self._deviceopened = False
         else:
             self._deviceopened = True
-            device = alcOpenDevice(device)
+            device = alc.alcOpenDevice(device)
             if device is None:
                 raise OpenALError()
             self.device = device.contents
         if attributes:
-            attributes = _to_ctypes(attributes, ALCint)
-        context = alcCreateContext(device, attributes)
+            attributes = _to_ctypes(attributes, alc.ALCint)
+        context = alc.alcCreateContext(device, attributes)
         if not context:
             raise OpenALError()
         self.context = context.contents
-        
+
         self._sources = {}
         self._sids = {}
+        self._streams = {}
         self._listener = None
 
     def __del__(self):
         context = getattr(self, "context", None)
         if context:
-            alcDestroyContext(context)
+            alc.alcDestroyContext(context)
         self.context = None
         if self._deviceopened:
-            alcCloseDevice(self.device)
+            alc.alcCloseDevice(self.device)
         self.device = None
 
     def activate(self):
         """Marks the SoundSink as being the current one for operating on
         the OpenAL states."""
-        alcMakeContextCurrent(self.context)
+        alc.alcMakeContextCurrent(self.context)
 
     @property
     def listener(self):
@@ -418,8 +490,8 @@ class SoundSink(object):
                 # Unused sid, use that one
                 sid = p
         if not sid:
-            sid = ALuint()
-            alGenSources(1, sid)
+            sid = al.ALuint()
+            al.alGenSources(1, sid)
             _continue_or_raise()
         self._sources[source] = sid.value
         self._sids[sid.value] = source
@@ -431,19 +503,19 @@ class SoundSink(object):
             sids = []
             for source in sources:
                 sids.append(self._create_source_id(source))
-            alSourcePlayv(_to_ctypes(sids, ALuint), len(sids))
+            al.alSourcePlayv(_to_ctypes(sids, al.ALuint), len(sids))
         else:
             sid = self._create_source_id(sources)
-            alSourcePlay(sid)
+            al.alSourcePlay(sid)
 
     def stop(self, sources):
         """Stops playing the buffered sounds of the source or sources."""
         if isinstance(sources, Iterable):
             sids = [self._sources[source] for source in sources
                     if source in self._sources]
-            alSourceStopv(_to_ctypes(sids, ALuint), len(sids))
+            al.alSourceStopv(_to_ctypes(sids, al.ALuint), len(sids))
         elif sources in self._sources:
-            alSourceStop(self._sources[source])
+            al.alSourceStop(self._sources[source])
 
     def pause(self, sources):
         """Pauses the playback of the buffered sounds of the source or
@@ -451,18 +523,18 @@ class SoundSink(object):
         if isinstance(sources, Iterable):
             sids = [self._sources[source] for source in sources
                     if source in self._sources]
-            alSourcePausev(_to_ctypes(sids, ALuint), len(sids))
+            al.alSourcePausev(_to_ctypes(sids, al.ALuint), len(sids))
         elif sources in self._sources:
-            alSourcePause(self._sources[source])
+            al.alSourcePause(self._sources[source])
 
     def rewind(self, sources):
         """Rewinds the buffers of the source or sources."""
         if isinstance(sources, Iterable):
             sids = [self._sources[source] for source in sources
                     if source in self._sources]
-            alSourceRewindv(_to_ctypes(sids, ALuint), len(sids))
+            al.alSourceRewindv(_to_ctypes(sids, al.ALuint), len(sids))
         elif sources in self._sources:
-            alSourceRewind(self._sources[source])
+            al.alSourceRewind(self._sources[source])
 
     def process_source(self, source):
         """Processes the passed SoundSource."""
@@ -473,13 +545,56 @@ class SoundSink(object):
             _set_source_value(sid, prop, source.dataproperties[prop])
         source.changedproperties = []
 
+        # Check the OpenAL buffers for the sid
+        bufcount = al.ALint()
+        freebufs = []
+        al.alGetSourcei(sid, al.AL_BUFFERS_PROCESSED, ctypes.byref(bufcount))
+        bufcount = bufcount.value
+        while bufcount > 0:
+            bufid = al.ALuint()
+            al.alSourceUnqueueBuffers(sid, 1, ctypes.byref(bufid))
+            freebufs.append(bufid)
+            bufcount -= 1
+
+        queued = al.ALint()
+        al.alGetSourcei(sid, al.AL_BUFFERS_QUEUED, ctypes.byref(queued))
+        queued = queued.value
+
+        # Check the source's buffer queue
+        while queued < self.MAX_BUFFERS_PER_SOURCE:
+            if len(source.bufferqueue) == 0:
+                break
+            data = source.bufferqueue.pop(0)
+            if len(freebufs) > 0:
+                bufid = freebufs.pop()
+            else:
+                bufid = al.ALuint()
+                al.alGenBuffers(1, ctypes.byref(bufid))
+
+            if getattr(data, "streaming", False):
+                # A stream that has to be read into a ring buffer
+                sids = self._streams.get(data, {})
+                offset, size = sids.get(sid)
+                bufsize = min(self.MAX_BUFFER_SIZE, size - offset)
+                bufdata = data.read(bufsize)
+                source.bufferqueue.insert(data)
+            else:
+                # A simple sound object - do not stream it.
+                bufdata = data.data
+                bufsize = data.size
+            # Queue the complete data.
+            al.alBufferData(bufid, data.format, bufdata, bufsize, data.frequency)
+            al.alSourceQueueBuffers(sid, 1, bufid)
+            _continue_or_raise()
+            queued += 1
+
     def process_listener(self):
         """Processes the SoundListener attached to the SoundSink."""
         props = getattr(self.listener, "changedproperties", [])
         for prop in props:
             _set_listener_value(prop, self.listener.dataproperties[prop])
         self.listener.changedproperties = []
-        
+
     def update(self):
         """Processes all currently attached sound sources."""
         self.process_listener()

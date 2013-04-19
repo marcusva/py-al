@@ -3,7 +3,7 @@ import os
 import sys
 import time
 import wave
-from openalaudio import *
+from openal.audio import SoundSink, SoundData, SoundSource
 
 def run():
     if len (sys.argv) < 2:
@@ -23,7 +23,7 @@ def run():
     sink = SoundSink()
     sink.activate()
 
-    source = SoundSource(position=[0, 0, 0])
+    source = SoundSource(position=[10, 0, 0])
     source.looping = True
 
     data = SoundData(wavbuf, channels, bitrate, len(wavbuf), samplerate)
@@ -31,7 +31,9 @@ def run():
 
     sink.play(source)
     while source.position[0] > -10:
-        source.position[0] -= 1
+        source.position = [source.position[0] - 1,
+                           source.position[1],
+                           source.position[2]]
         sink.update()
         print("playing at %r" % source.position)
         time.sleep(1)

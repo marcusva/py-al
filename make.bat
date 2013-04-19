@@ -1,4 +1,7 @@
 @SETLOCAL
+@IF "%PYTHONPATH%" == "" (
+    SET PYTHONPATH=%CHDIR%
+)
 @IF "%PYTHON27_X86%" == "" (
     SET PYTHON27_X86=c:\Python27-x86\python.exe
 )
@@ -106,7 +109,7 @@
 @GOTO :eof
 
 :runtest
-@%PYTHON% test\util\runtests.py
+@%PYTHON% -B -m test.util.runtests
 @GOTO :eof
 
 @REM Do not run these in production environments. They are for testing purposes
@@ -166,48 +169,31 @@
 
 :testall
 @FOR /F "tokens=1 delims=" %%A in ('CHDIR') do @SET PYTHONPATH=%%A && @SET IRONPYTHONPATH=%%A
-@%PYTHON27_X86% test\util\runtests.py
-@DEL /Q test\*.pyc
-@%PYTHON27_X64% test\util\runtests.py
-@DEL /Q test\*.pyc
-@%PYTHON31_X86% test\util\runtests.py
-@DEL /Q test\*.pyc
-@RMDIR /S /Q test\__pycache__
-@%PYTHON31_X64% test\util\runtests.py
-@DEL /Q test\*.pyc
-@RMDIR /S /Q test\__pycache__
-@%PYTHON32_X86% test\util\runtests.py
-@DEL /Q test\*.pyc
-@RMDIR /S /Q test\__pycache__
-@%PYTHON32_X64% test\util\runtests.py
-@DEL /Q test\*.pyc
-@RMDIR /S /Q test\__pycache__
-@%PYTHON33_X86% test\util\runtests.py
-@DEL /Q test\*.pyc
-@RMDIR /S /Q test\__pycache__
-@%PYTHON33_X64% test\util\runtests.py
-@DEL /Q test\*.pyc
-@RMDIR /S /Q test\__pycache__
-@%PYPY18% test\util\runtests.py
-@DEL /Q test\*.pyc
-@%PYPY19% test\util\runtests.py
-@DEL /Q test\*.pyc
-@%IRONPYTHON27% test\util\runtests.py
-@DEL /Q test\*.pyc
+@%PYTHON27_X86% -B -m test.util.runtests
+@%PYTHON27_X64% -B -m test.util.runtests
+@%PYTHON31_X86% -B -m test.util.runtests
+@%PYTHON31_X64% -B -m test.util.runtests
+@%PYTHON32_X86% -B -m test.util.runtests
+@%PYTHON32_X64% -B -m test.util.runtests
+@%PYTHON33_X86% -B -m test.util.runtests
+@%PYTHON33_X64% -B -m test.util.runtests
+@%PYPY18% -B -m test.util.runtests
+@%PYPY19% -B -m test.util.runtests
+@%IRONPYTHON27% -B -m test.util.runtests
 @GOTO :eof
 
 :testall2
-@%PYTHON27_X86% -c "import openal.test; openal.test.run ()"
-@%PYTHON27_X64% -c "import openal.test; openal.test.run ()"
-@%PYTHON31_X86% -c "import openal.test; openal.test.run ()"
-@%PYTHON31_X64% -c "import openal.test; openal.test.run ()"
-@%PYTHON32_X86% -c "import openal.test; openal.test.run ()"
-@%PYTHON32_X64% -c "import openal.test; openal.test.run ()"
-@%PYTHON33_X86% -c "import openal.test; openal.test.run ()"
-@%PYTHON33_X64% -c "import openal.test; openal.test.run ()"
-@%PYPY18% -c "import openal.test; openal.test.run ()"
-@%PYPY19% -c "import openal.test; openal.test.run ()"
-@%IRONPYTHON27% -c "import openal.test; openal.test.run ()"
+@%PYTHON27_X86% -B -c "import openal.test; openal.test.run()"
+@%PYTHON27_X64% -B -c "import openal.test; openal.test.run()"
+@%PYTHON31_X86% -B -c "import openal.test; openal.test.run()"
+@%PYTHON31_X64% -B -c "import openal.test; openal.test.run()"
+@%PYTHON32_X86% -B -c "import openal.test; openal.test.run()"
+@%PYTHON32_X64% -B -c "import openal.test; openal.test.run()"
+@%PYTHON33_X86% -B -c "import openal.test; openal.test.run()"
+@%PYTHON33_X64% -B -c "import openal.test; openal.test.run()"
+@%PYPY18% -B -c "import openal.test; openal.test.run()"
+@%PYPY19% -B -c "import openal.test; openal.test.run()"
+@%IRONPYTHON27% -B -c "import openal.test; openal.test.run()"
 @GOTO :eof
 
 :purge_installs

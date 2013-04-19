@@ -3,8 +3,9 @@ top_srcdir := `pwd`
 PYTHONPATH ?= $(top_srcdir)
 SUBDIRS = \
 	$(top_srcdir)/doc \
-	$(top_srcdir)/test \
-    $(top_srcdir)/test/util \
+	$(top_srcdir)/openal \
+	$(top_srcdir)/openal/test \
+	$(top_srcdir)/openal/test/util \
 	$(top_srcdir)/examples
 
 all: clean build
@@ -62,29 +63,25 @@ runtest:
 
 buildall: clean
 	@python2.7 setup.py build
-	@python3.1 setup.py build
 	@python3.2 setup.py build
 	@python3.3 setup.py build
-	@pypy1.9 setup.py build
+	@pypy2.0 setup.py build
 
 
 installall:
 	@python2.7 setup.py install
-	@python3.1 setup.py install
 	@python3.2 setup.py install
 	@python3.3 setup.py install
-	@pypy1.9 setup.py install
+	@pypy2.0 setup.py install
 
 testall:
 	@-PYTHONPATH=$(PYTHONPATH) python2.7 -B -m test.util.runtests
-	@-PYTHONPATH=$(PYTHONPATH) python3.1 -B -m test.util.runtests
 	@-PYTHONPATH=$(PYTHONPATH) python3.2 -B -m test.util.runtests
 	@-PYTHONPATH=$(PYTHONPATH) python3.3 -B -m test.util.runtests
-	@-PYTHONPATH=$(PYTHONPATH) pypy1.9 -B -m test.util.runtests
+	@-PYTHONPATH=$(PYTHONPATH) pypy2.0 -B -m test.util.runtests
 
 purge_installs:
 	rm -rf /usr/local/lib/python2.7/site-packages/openal*
-	rm -rf /usr/local/lib/python3.1/site-packages/openal*
 	rm -rf /usr/local/lib/python3.2/site-packages/openal*
 	rm -rf /usr/local/lib/python3.3/site-packages/openal*
-	rm -rf /usr/local/lib/pypy-1.9/site-packages/openal*
+	rm -rf /usr/local/lib/pypy-2.0/site-packages/openal*

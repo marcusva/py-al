@@ -1,6 +1,6 @@
-##
-## This file is placed under the public domain.
-##
+# #
+# # This file is placed under the public domain.
+# #
 import sys
 import os
 import unittest
@@ -43,11 +43,8 @@ class TagTestLoader(TestLoader):
                     return []
 
         testFnNames = list(filter(isTestMethod, dir(testCaseClass)))
-        cmpkey = None
-        if hasattr(unittest, "_CmpToKey"):
-            cmpkey = unittest._CmpToKey
-        elif hasattr(unittest, "CmpToKey"):
-            cmpkey = unittest.CmpToKey
+        cmpkey = getattr(unittest, "_CmpToKey", None) or \
+            getattr(unittest, "CmpToKey", None)
 
         if self.randomizer:
             self.randomizer.shuffle(testFnNames)
