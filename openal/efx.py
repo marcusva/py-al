@@ -1,7 +1,8 @@
 """OpenAL EFX extensions"""
 from ctypes import POINTER
-from . import ALsizei, ALfloat, ALenum, ALuint, ALint, ALboolean, AL_TRUE, \
-    AL_FALSE, dll
+from .al import ALsizei, ALfloat, ALenum, ALuint, ALint, ALboolean, AL_TRUE, \
+    AL_FALSE
+from . import dll
 
 ALC_EXT_EFX_NAME = "ALC_EXT_EFX"
 
