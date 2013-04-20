@@ -25,16 +25,27 @@ _ERRMAP = {al.AL_NO_ERROR: "No Error",
            al.AL_INVALID_ENUM: "Invalid enum",
            al.AL_INVALID_VALUE: "Invalid value",
            al.AL_INVALID_OPERATION: "Invalid operation",
-           al.AL_OUT_OF_MEMORY: "Out of memory"
+           al.AL_OUT_OF_MEMORY: "Out of memory",
+           alc.ALC_NO_ERROR: "No Error",
+           alc.ALC_INVALID_DEVICE: "Invalid device",
+           alc.ALC_INVALID_CONTEXT: "Invalid context",
+           alc.ALC_INVALID_ENUM: "Invalid ALC enum",
+           alc.ALC_INVALID_VALUE: "Invalid ALC value",
+           alc.ALC_OUT_OF_MEMORY: "Out of memory"
            }
 _get_error_message = lambda x: _ERRMAP.get(x, "Error code [%d]" % x)
 
 
-def _continue_or_raise():
+def _continue_or_raise(alcdevice=None):
     """Raises an OpenALError, if an error flag is set."""
-    err = al.alGetError()
-    if err != al.AL_NO_ERROR:
-        raise OpenALError(_get_error_message(err))
+    if alcdevice:
+        err = alc.alcGetError(alcdevice)
+        if err != alc.ALC_NO_ERROR:
+            raise OpenALError(_get_error_message(err))
+    else:
+        err = al.alGetError()
+        if err != al.AL_NO_ERROR:
+            raise OpenALError(_get_error_message(err))
 
 
 # Property update handling on SoundListener, SoundData and SoundSource
@@ -233,7 +244,7 @@ def add_source_extension(propname, proptype, vcount, valuetype, getter, setter):
 
 class OpenALError(Exception):
     """A OpenAL specific exception class."""
-    def __init__(self, msg=None):
+    def __init__(self, msg=None, alcdevice=None):
         """Creates a new OpenALError instance with the specified message.
 
         If no msg is provided, the message will be set a mapped value of
@@ -243,8 +254,12 @@ class OpenALError(Exception):
         self.msg = msg
         self.errcode = -1
         if msg is None:
-            self.errcode = al.alGetError()
-            self.msg = _get_error_message(self.errcode)
+            if alcdevice:
+                self.errcode = alc.alcGetError(alcdevice)
+                self.msg = _get_error_message(self.errcode)
+            else:
+                self.errcode = al.alGetError()
+                self.msg = _get_error_message(self.errcode)
 
     def __str__(self):
         return repr(self.msg)
@@ -401,10 +416,6 @@ class SoundSource(object):
         """Adds a SoundData object for playback to the SoundSource."""
         self.bufferqueue.append(sounddata)
 
-    def play(self, sounddata):
-        """Adds a SoundData object for playback to the SoundSource."""
-        self.queue(sounddata)
-
 
 class SoundSink(object):
     """Audio playback system.
@@ -424,14 +435,14 @@ class SoundSink(object):
         else:
             self._deviceopened = True
             device = alc.alcOpenDevice(device)
-            if device is None:
-                raise OpenALError()
+            if not device:
+                raise OpenALError(alc=True)
             self.device = device.contents
         if attributes:
             attributes = _to_ctypes(attributes, alc.ALCint)
         context = alc.alcCreateContext(device, attributes)
         if not context:
-            raise OpenALError()
+            raise OpenALError(alc=True)
         self.context = context.contents
 
         self._sources = {}
@@ -452,6 +463,7 @@ class SoundSink(object):
         """Marks the SoundSink as being the current one for operating on
         the OpenAL states."""
         alc.alcMakeContextCurrent(self.context)
+        _continue_or_raise(self.device)
 
     @property
     def listener(self):
@@ -502,11 +514,13 @@ class SoundSink(object):
         if isinstance(sources, Iterable):
             sids = []
             for source in sources:
-                sids.append(self._create_source_id(source))
+                sid = self._create_source_id(source)
+                sids.append(sid)
             al.alSourcePlayv(_to_ctypes(sids, al.ALuint), len(sids))
         else:
             sid = self._create_source_id(sources)
             al.alSourcePlay(sid)
+        _continue_or_raise()
 
     def stop(self, sources):
         """Stops playing the buffered sounds of the source or sources."""
@@ -516,6 +530,7 @@ class SoundSink(object):
             al.alSourceStopv(_to_ctypes(sids, al.ALuint), len(sids))
         elif sources in self._sources:
             al.alSourceStop(self._sources[source])
+        _continue_or_raise()
 
     def pause(self, sources):
         """Pauses the playback of the buffered sounds of the source or
@@ -526,6 +541,7 @@ class SoundSink(object):
             al.alSourcePausev(_to_ctypes(sids, al.ALuint), len(sids))
         elif sources in self._sources:
             al.alSourcePause(self._sources[source])
+        _continue_or_raise()
 
     def rewind(self, sources):
         """Rewinds the buffers of the source or sources."""
@@ -535,6 +551,7 @@ class SoundSink(object):
             al.alSourceRewindv(_to_ctypes(sids, al.ALuint), len(sids))
         elif sources in self._sources:
             al.alSourceRewind(self._sources[source])
+        _continue_or_raise()
 
     def process_source(self, source):
         """Processes the passed SoundSource."""
@@ -558,6 +575,7 @@ class SoundSink(object):
 
         queued = al.ALint()
         al.alGetSourcei(sid, al.AL_BUFFERS_QUEUED, ctypes.byref(queued))
+        _continue_or_raise()
         queued = queued.value
 
         # Check the source's buffer queue
@@ -570,6 +588,7 @@ class SoundSink(object):
             else:
                 bufid = al.ALuint()
                 al.alGenBuffers(1, ctypes.byref(bufid))
+                _continue_or_raise()
 
             if getattr(data, "streaming", False):
                 # A stream that has to be read into a ring buffer
@@ -583,9 +602,14 @@ class SoundSink(object):
                 bufdata = data.data
                 bufsize = data.size
             # Queue the complete data.
-            al.alBufferData(bufid, data.format, bufdata, bufsize, data.frequency)
-            al.alSourceQueueBuffers(sid, 1, bufid)
-            _continue_or_raise()
+            state = al.ALint()
+            al.alGetSourcei(sid, al.AL_SOURCE_STATE, ctypes.byref(state))
+            if state not in (al.AL_PAUSED, al.AL_PLAYING):
+                al.alBufferData(bufid, data.format, bufdata, bufsize, data.frequency)
+                _continue_or_raise()
+                al.alSourceQueueBuffers(sid, 1, bufid)
+                _continue_or_raise()
+                al.alSourcePlay(sid)
             queued += 1
 
     def process_listener(self):

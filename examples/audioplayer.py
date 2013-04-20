@@ -36,7 +36,7 @@ def run():
                            source.position[2]]
         sink.update()
         print("playing at %r" % source.position)
-        time.sleep(1)
+        time.sleep(2)
     print("done")
 
 
