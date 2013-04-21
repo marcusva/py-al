@@ -1,3 +1,4 @@
+"""Utility functions for loading sounds."""
 import os
 import wave
 from .audio import SoundData

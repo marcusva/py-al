@@ -10,10 +10,6 @@ __all__ = ["SoundListener", "SoundSource", "SoundData", "SoundSink",
            ]
 
 
-__version__ = "0.1.0"
-version_info = (0, 1, 0, "")
-
-
 # Helper functions
 _to_ctypes = lambda seq, dtype: (len(seq) * dtype)(*seq)
 _to_python = lambda seq: [x.value for x in seq]
@@ -626,5 +622,3 @@ class SoundSink(object):
         process_source = self.process_source
         for source in self._sources:
             process_source(source)
-
-
