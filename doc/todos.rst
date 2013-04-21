@@ -1,6 +1,5 @@
-TODOs
-=====
+Todo list for PyAL
+==================
 
-General
--------
 * proper unit tests
+* more examples

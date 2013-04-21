@@ -56,7 +56,7 @@ docs:
 
 release: dist
 runtest:
-	@PYTHONPATH=$(PYTHONPATH) $(PYTHON) -B -m test.util.runtests
+	@PYTHONPATH=$(PYTHONPATH) $(PYTHON) -B -m openal.test.util.runtests
 
 # Do not run these in production environments! They are for testing
 # purposes only!
@@ -75,10 +75,10 @@ installall:
 	@pypy2.0 setup.py install
 
 testall:
-	@-PYTHONPATH=$(PYTHONPATH) python2.7 -B -m test.util.runtests
-	@-PYTHONPATH=$(PYTHONPATH) python3.2 -B -m test.util.runtests
-	@-PYTHONPATH=$(PYTHONPATH) python3.3 -B -m test.util.runtests
-	@-PYTHONPATH=$(PYTHONPATH) pypy2.0 -B -m test.util.runtests
+	@-PYTHONPATH=$(PYTHONPATH) python2.7 -B -m openal.test.util.runtests
+	@-PYTHONPATH=$(PYTHONPATH) python3.2 -B -m openal.test.util.runtests
+	@-PYTHONPATH=$(PYTHONPATH) python3.3 -B -m openal.test.util.runtests
+	@-PYTHONPATH=$(PYTHONPATH) pypy2.0 -B -m openal.test.util.runtests
 
 purge_installs:
 	rm -rf /usr/local/lib/python2.7/site-packages/openal*

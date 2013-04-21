@@ -6,13 +6,6 @@ from ..audio import OpenALError, SoundData, SoundListener, SoundSource, \
 
 
 class OpenALAudioTest(unittest.TestCase):
-    def setUp(self):
-        if sys.version.startswith("3.1"):
-            self.assertIsInstance = \
-                lambda x, t: self.assertTrue(isinstance(x, t))
-
-    def tearDown(self):
-        pass
 
     def test_OpenALError(self):
         err = OpenALError()
@@ -33,7 +26,6 @@ class OpenALAudioTest(unittest.TestCase):
         self.assertIsNone(data.channels)
         self.assertIsNone(data.data)
         self.assertIsNone(data.bitrate)
-        # TODO: initializers
 
     def test_SoundData_frequency(self):
         data = SoundData()

@@ -84,5 +84,6 @@ def get_dll_file():
     """Gets the file name of the loaded OpenAL library."""
     return dll.libfile
 
+
 __version__ = "0.1.0"
 version_info = (0, 1, 0, "")

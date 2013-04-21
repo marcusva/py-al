@@ -13,14 +13,18 @@ if __name__ == "__main__":
         VERSION = VERSION.replace("-rc", "r")
 
     setupdata = {
-        "name":  "pyal",
+        "name":  "PyAL",
         "version": VERSION,
         "description": "Python OpenAL bindings",
         "author": "Marcus von Appen",
         "author_email": "marcus@sysfault.org",
         "license": "Public Domain / zlib",
-        "url": "http://code.google.com/p/pgreloaded",
-        "packages": ["openal", "openal.test", "openal.test.util"],
+        "url": "http://bitbucket.org/marcusva/py-al",
+        "packages": ["openal",
+                     "openal.test",
+                     "openal.test.util"
+                     ],
+        "package_data": {"openal.test": ["resources/*.*"]},
         "classifiers": [
             "Development Status :: 4 - Beta",
             "Intended Audience :: Developers",

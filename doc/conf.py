@@ -48,7 +48,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'PyAL'
-copyright = u'2012, Marcus von Appen'
+copyright = u'2012-2013, Marcus von Appen'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -235,7 +235,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   ('index', 'PyAL', u'PyAL Documentation',
-   u'Marcus von Appen', 'PyAL', 'One line description of project.',
+   u'Marcus von Appen', 'PyAL', 'ctypes wrapper for OpenAL',
    'Miscellaneous'),
 ]
 

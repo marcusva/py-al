@@ -243,12 +243,13 @@ def add_source_extension(propname, proptype, vcount, valuetype, getter, setter):
 
 
 class OpenALError(Exception):
-    """A OpenAL specific exception class."""
+    """An OpenAL specific exception class."""
     def __init__(self, msg=None, alcdevice=None):
         """Creates a new OpenALError instance with the specified message.
 
         If no msg is provided, the message will be set a mapped value of
-        alGetError().
+        alGetError(). If an ALCdevice is provided as alcdevice, alcGetError()
+        will be used instead of alGetError().
         """
         super(OpenALError, self).__init__()
         self.msg = msg
@@ -269,7 +270,7 @@ class SoundData(object):
     """A buffered audio object.
 
     The SoundData consists of a PCM audio data buffer, the audio frequency
-    and format information.
+    and additional format information to allow easy buffering through OpenAL.
     """
     def __init__(self, data=None, channels=None, bitrate=None, size=None,
                  frequency=None, dformat=None):
@@ -625,3 +626,5 @@ class SoundSink(object):
         process_source = self.process_source
         for source in self._sources:
             process_source(source)
+
+

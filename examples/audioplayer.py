@@ -2,8 +2,8 @@
 import os
 import sys
 import time
-import wave
-from openal.audio import SoundSink, SoundData, SoundSource
+from openal.audio import SoundSink, SoundSource
+from openal.loaders import load_wav_file
 
 def run():
     if len (sys.argv) < 2:
@@ -14,11 +14,6 @@ def run():
     else:
         fname = sys.argv[1]
 
-    wavefp = wave.open(fname)
-    channels = wavefp.getnchannels()
-    bitrate = wavefp.getsampwidth() * 8
-    samplerate = wavefp.getframerate()
-    wavbuf = wavefp.readframes(wavefp.getnframes())
 
     sink = SoundSink()
     sink.activate()
@@ -26,7 +21,7 @@ def run():
     source = SoundSource(position=[10, 0, 0])
     source.looping = True
 
-    data = SoundData(wavbuf, channels, bitrate, len(wavbuf), samplerate)
+    data = load_wav_file(fname)
     source.queue(data)
 
     sink.play(source)

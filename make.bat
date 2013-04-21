@@ -2,46 +2,19 @@
 @IF "%PYTHONPATH%" == "" (
     SET PYTHONPATH=%CHDIR%
 )
-@IF "%PYTHON27_X86%" == "" (
-    SET PYTHON27_X86=c:\Python27-x86\python.exe
-)
-@IF "%PYTHON27_X64%" == "" (
-    SET PYTHON27_X64=c:\Python27-x64\python.exe
-)
-@IF "%PYTHON31_X86%" == "" (
-    SET PYTHON31_X86=c:\Python31-x86\python.exe
-)
-@IF "%PYTHON31_X64%" == "" (
-    SET PYTHON31_X64=c:\Python31-x64\python.exe
-)
-@IF "%PYTHON32_X86%" == "" (
-    SET PYTHON32_X86=c:\Python32-x86\python.exe
-)
-@IF "%PYTHON32_X64%" == "" (
-    SET PYTHON32_X64=c:\Python32-x64\python.exe
-)
-@IF "%PYTHON33_X86%" == "" (
-    SET PYTHON33_X86=c:\Python33-x86\python.exe
-)
-@IF "%PYTHON33_X64%" == "" (
-    SET PYTHON33_X64=c:\Python33-x64\python.exe
-)
-@IF "%PYTHON%" == "" (
-    SET PYTHON=%PYTHON27_X64%
-)
-@IF "%PYPY18%" == "" (
-    SET PYPY18=c:\pypy-1.8\pypy.exe
-)
-@IF "%PYPY19%" == "" (
-    SET PYPY19=c:\pypy-1.9\pypy.exe
-)
-@IF "%IRONPYTHON27%" == "" (
-    SET IRONPYTHON27=c:\IronPython-2.7.3\ipy.exe
-)
+@IF "%PYTHON27_X86%" == "" (SET PYTHON27_X86=c:\Python27-x86\python.exe)
+@IF "%PYTHON27_X64%" == "" (SET PYTHON27_X64=c:\Python27-x64\python.exe)
+@IF "%PYTHON32_X86%" == "" (SET PYTHON32_X86=c:\Python32-x86\python.exe)
+@IF "%PYTHON32_X64%" == "" (SET PYTHON32_X64=c:\Python32-x64\python.exe)
+@IF "%PYTHON33_X86%" == "" (SET PYTHON33_X86=c:\Python33-x86\python.exe)
+@IF "%PYTHON33_X64%" == "" (SET PYTHON33_X64=c:\Python33-x64\python.exe)
+@IF "%PYTHON%" == "" (SET PYTHON=%PYTHON27_X64%)
+@IF "%PYPY18%" == "" (SET PYPY18=c:\pypy-1.8\pypy.exe)
+@IF "%PYPY19%" == "" (SET PYPY19=c:\pypy-1.9\pypy.exe)
+@IF "%PYPY20%" == "" (SET PYPY20=c:\pypy-2.0\pypy.exe)
+@IF "%IRONPYTHON27%" == "" (SET IRONPYTHON27=c:\IronPython-2.7.3\ipy.exe)
 
-@IF "%1" == "" (
-    GOTO :all
-)
+@IF "%1" == "" (GOTO :all)
 @GOTO :%1
 
 :all
@@ -62,11 +35,9 @@
 @CALL :docs
 @ECHO Creating bdist...
 @%PYTHON27_X86% setup.py bdist --format=msi
-@%PYTHON31_X86% setup.py bdist --format=msi
 @%PYTHON32_X86% setup.py bdist --format=msi
 @%PYTHON33_X86% setup.py bdist --format=msi
 @%PYTHON27_X64% setup.py bdist --format=msi
-@%PYTHON31_X64% setup.py bdist --format=msi
 @%PYTHON32_X64% setup.py bdist --format=msi
 @%PYTHON33_X64% setup.py bdist --format=msi
 @GOTO :eof
@@ -121,10 +92,6 @@
 @CALL :clean
 @%PYTHON27_X64% setup.py build
 @CALL :clean
-@%PYTHON31_X86% setup.py build
-@CALL :clean
-@%PYTHON31_X64% setup.py build
-@CALL :clean
 @%PYTHON32_X86% setup.py build
 @CALL :clean
 @%PYTHON32_X64% setup.py build
@@ -147,10 +114,6 @@
 @CALL :clean
 @%PYTHON27_X64% setup.py install
 @CALL :clean
-@%PYTHON31_X86% setup.py install
-@CALL :clean
-@%PYTHON31_X64% setup.py install
-@CALL :clean
 @%PYTHON32_X86% setup.py install
 @CALL :clean
 @%PYTHON32_X64% setup.py install
@@ -169,24 +132,20 @@
 
 :testall
 @FOR /F "tokens=1 delims=" %%A in ('CHDIR') do @SET PYTHONPATH=%%A && @SET IRONPYTHONPATH=%%A
-@%PYTHON27_X86% -B -m test.util.runtests
-@%PYTHON27_X64% -B -m test.util.runtests
-@%PYTHON31_X86% -B -m test.util.runtests
-@%PYTHON31_X64% -B -m test.util.runtests
-@%PYTHON32_X86% -B -m test.util.runtests
-@%PYTHON32_X64% -B -m test.util.runtests
-@%PYTHON33_X86% -B -m test.util.runtests
-@%PYTHON33_X64% -B -m test.util.runtests
-@%PYPY18% -B -m test.util.runtests
-@%PYPY19% -B -m test.util.runtests
-@%IRONPYTHON27% -B -m test.util.runtests
+@%PYTHON27_X86% -B -m openal.test.util.runtests
+@%PYTHON27_X64% -B -m openal.test.util.runtests
+@%PYTHON32_X86% -B -m openal.test.util.runtests
+@%PYTHON32_X64% -B -m openal.test.util.runtests
+@%PYTHON33_X86% -B -m openal.test.util.runtests
+@%PYTHON33_X64% -B -m openal.test.util.runtests
+@%PYPY18% -B -m openal.test.util.runtests
+@%PYPY19% -B -m openal.test.util.runtests
+@%IRONPYTHON27% -B -m openal.test.util.runtests
 @GOTO :eof
 
 :testall2
 @%PYTHON27_X86% -B -c "import openal.test; openal.test.run()"
 @%PYTHON27_X64% -B -c "import openal.test; openal.test.run()"
-@%PYTHON31_X86% -B -c "import openal.test; openal.test.run()"
-@%PYTHON31_X64% -B -c "import openal.test; openal.test.run()"
 @%PYTHON32_X86% -B -c "import openal.test; openal.test.run()"
 @%PYTHON32_X64% -B -c "import openal.test; openal.test.run()"
 @%PYTHON33_X86% -B -c "import openal.test; openal.test.run()"
@@ -200,8 +159,6 @@
 @echo Deleting data...
 @RMDIR /S /Q C:\Python27-x86\Lib\site-packages\openal
 @RMDIR /S /Q C:\Python27-x64\Lib\site-packages\openal
-@RMDIR /S /Q C:\Python31-x86\Lib\site-packages\openal
-@RMDIR /S /Q C:\Python31-x64\Lib\site-packages\openal
 @RMDIR /S /Q C:\Python32-x86\Lib\site-packages\openal
 @RMDIR /S /Q C:\Python32-x64\Lib\site-packages\openal
 @RMDIR /S /Q C:\Python33-x86\Lib\site-packages\openal

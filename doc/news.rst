@@ -2,8 +2,8 @@ Release News
 ============
 This describes the latest changes between the PyAL releases.
 
-1.0.0
+0.1.0
 -----
-Released on 2013-XX-XX.
+Released on 2013-04-21.
 
 * Initial Release
