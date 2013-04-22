@@ -65,7 +65,7 @@ runtest:
 
 testall:
 	@for interp in $(INTERPRETERS); do \
-		@-PYTHONPATH=$(PYTHONPATH) $$interp -B -m openal.test.util.runtests; \
+		PYTHONPATH=$(PYTHONPATH) $$interp -B -m openal.test.util.runtests; \
 	done
 
 # Do not run these in production environments! They are for testing

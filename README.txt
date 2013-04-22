@@ -16,7 +16,9 @@ Documentation
 If you just started with OpenAL and PyAL, it is strongly recommended
 that you read through the *advanced sound support* section of the documentation
 to understand, how OpenAL works in general. In any case, you can find the
-documentation at *doc/html*.
+documentation at *doc/html* or online at http://pythonhosted.org/PyAL (for the
+current stable release) or at http://pyal.readthedocs.org (for the current
+development release).
 
 License
 =======
