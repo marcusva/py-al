@@ -12,9 +12,15 @@ You must have at least one of the following Python versions installed:
 
 * Python 2.7, 3.1+     (http://www.python.org)
 * PyPy 1.8.0+          (http://www.pypy.org)
+* IronPython 2.7.3+    (http://www.ironpython.net)
 
 Other Python versions or Python implementations might work, but are (currently)
 not officially tested or supported by the PyAL distribution.
+
+You must have OpenAL installed. OpenAL-compatible libraries might have shipped
+with your sound drivers already. Otherwise it is recommended to obtain them
+from your sound card manufacturer or from  http://www.openal.org or
+http://kcat.strangesoft.net/openal.html.
 
 Installation
 ------------

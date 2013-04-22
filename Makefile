@@ -8,6 +8,9 @@ SUBDIRS = \
 	$(top_srcdir)/openal/test/util \
 	$(top_srcdir)/examples
 
+INTERPRETERS = python2.7 python3.2 python3.3 pypy2.0
+
+
 all: clean build
 
 dist: clean docs
@@ -55,33 +58,37 @@ docs:
 	@cd doc && make clean
 
 release: dist
+
 runtest:
 	@PYTHONPATH=$(PYTHONPATH) $(PYTHON) -B -m openal.test.util.runtests
+
+
+testall:
+	@for interp in $(INTERPRETERS); do \
+		@-PYTHONPATH=$(PYTHONPATH) $$interp -B -m openal.test.util.runtests; \
+	done
 
 # Do not run these in production environments! They are for testing
 # purposes only!
 
 buildall: clean
-	@python2.7 setup.py build
-	@python3.2 setup.py build
-	@python3.3 setup.py build
-	@pypy2.0 setup.py build
+	@for interp in $(INTERPRETERS); do \
+		$$interp setup.py build; \
+	done
 
 
 installall:
-	@python2.7 setup.py install
-	@python3.2 setup.py install
-	@python3.3 setup.py install
-	@pypy2.0 setup.py install
+	@for interp in $(INTERPRETERS); do \
+		$$interp setup.py install; \
+	done
 
-testall:
-	@-PYTHONPATH=$(PYTHONPATH) python2.7 -B -m openal.test.util.runtests
-	@-PYTHONPATH=$(PYTHONPATH) python3.2 -B -m openal.test.util.runtests
-	@-PYTHONPATH=$(PYTHONPATH) python3.3 -B -m openal.test.util.runtests
-	@-PYTHONPATH=$(PYTHONPATH) pypy2.0 -B -m openal.test.util.runtests
+
+testpackage:
+	@for interp in $(INTERPRETERS); do \
+		$$interp -c "import openal.test; openal.test.run()"; \
+	done
 
 purge_installs:
-	rm -rf /usr/local/lib/python2.7/site-packages/openal*
-	rm -rf /usr/local/lib/python3.2/site-packages/openal*
-	rm -rf /usr/local/lib/python3.3/site-packages/openal*
-	rm -rf /usr/local/lib/pypy-2.0/site-packages/openal*
+	@for interp in $(INTERPRETERS); do \
+		rm -rf /usr/local/lib/$$interp/site-packages/openal*; \
+	done
