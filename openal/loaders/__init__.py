@@ -1,9 +1,12 @@
 """Utility functions for loading sounds."""
 import os
+import sys
 import wave
-from .audio import SoundData
+from ..audio import SoundData
+
 
 __all__ = ["load_wav_file", "load_file"]
+
 
 def load_wav_file(fname):
     """Loads a WAV encoded audio file into a SoundData object."""
@@ -16,31 +19,13 @@ def load_wav_file(fname):
 
 
 # supported extensions
-_EXTENSIONS = {".wav": load_wav_file}
-
-
-#try:
-#    from ..ogg import vorbisfile as vorbis
-#
-#    @experimental
-#    def load_ogg_file(fname):
-#        """Loads an Ogg-Vorbis encoded audio file into a SoundData object."""
-#        fp = vorbis.fopen(fname)
-#        finfo = vorbis.info(fp)
-#        length = vorbis.pcm_total(fp)
-#        buf = vorbis.read(fp, length, word=2)[0]
-#        return SoundData(buf, finfo.channels, 16, length, finfo.rate)
-#
-#    _EXTENSIONS[".ogg"] = load_ogg_file
-#
-#except ImportError:
-#    pass
+_FILEEXTENSIONS = {".wav": load_wav_file}
 
 
 def load_file(fname):
     """Loads an audio file into a SoundData object."""
     ext = os.path.splitext(fname)[1].lower()
-    funcptr = _EXTENSIONS.get(ext, None)
+    funcptr = _FILEEXTENSIONS.get(ext, None)
     if not funcptr:
         raise ValueError("unsupported audio file type")
     return funcptr(fname)
@@ -49,4 +34,3 @@ def load_file(fname):
 def load_stream(source):
     """Loads an audio stream into a SoundData object."""
     raise NotImplementedError("not implemented yet")
-

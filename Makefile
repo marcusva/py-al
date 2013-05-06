@@ -4,6 +4,7 @@ PYTHONPATH ?= $(top_srcdir)
 SUBDIRS = \
 	$(top_srcdir)/doc \
 	$(top_srcdir)/openal \
+	$(top_srcdir)/openal/loaders \
 	$(top_srcdir)/openal/test \
 	$(top_srcdir)/openal/test/util \
 	$(top_srcdir)/examples

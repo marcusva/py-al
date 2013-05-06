@@ -277,10 +277,10 @@ class SoundData(object):
         self.frequency = frequency
         self.data = data
         if dformat is None:
-            formatmap = {(1, 8) : al.AL_FORMAT_MONO8,
-                         (2, 8) : al.AL_FORMAT_STEREO8,
+            formatmap = {(1, 8): al.AL_FORMAT_MONO8,
+                         (2, 8): al.AL_FORMAT_STEREO8,
                          (1, 16): al.AL_FORMAT_MONO16,
-                         (2, 16) : al.AL_FORMAT_STEREO16
+                         (2, 16): al.AL_FORMAT_STEREO16
                          }
             dformat = formatmap.get((channels, bitrate), None)
         self.format = dformat
@@ -320,7 +320,8 @@ class SoundListener(object):
         self.dataproperties[al.AL_POSITION] = position
         self.dataproperties[al.AL_VELOCITY] = velocity
         self.dataproperties[al.AL_ORIENTATION] = orientation
-        self.changedproperties = [al.AL_POSITION, al.AL_VELOCITY, al.AL_ORIENTATION]
+        self.changedproperties = [al.AL_POSITION, al.AL_VELOCITY,
+                                  al.AL_ORIENTATION]
 
     def __getattr__(self, name):
         if name in ("dataproperties", "changedproperties"):
@@ -370,7 +371,8 @@ class SoundSource(object):
         self.dataproperties[al.AL_PITCH] = pitch
         self.dataproperties[al.AL_POSITION] = position
         self.dataproperties[al.AL_VELOCITY] = velocity
-        self.changedproperties = [al.AL_GAIN, al.AL_PITCH, al.AL_POSITION, al.AL_VELOCITY]
+        self.changedproperties = [al.AL_GAIN, al.AL_PITCH, al.AL_POSITION,
+                                  al.AL_VELOCITY]
 
     def __getattr__(self, name):
         if name in ("dataproperties", "changedproperties", "bufferqueue"):
@@ -602,7 +604,8 @@ class SoundSink(object):
             state = al.ALint()
             al.alGetSourcei(sid, al.AL_SOURCE_STATE, ctypes.byref(state))
             if state not in (al.AL_PAUSED, al.AL_PLAYING):
-                al.alBufferData(bufid, data.format, bufdata, bufsize, data.frequency)
+                al.alBufferData(bufid, data.format, bufdata, bufsize,
+                                data.frequency)
                 _continue_or_raise()
                 al.alSourceQueueBuffers(sid, 1, bufid)
                 _continue_or_raise()

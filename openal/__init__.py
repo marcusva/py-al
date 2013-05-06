@@ -7,6 +7,7 @@ from ctypes.util import find_library
 
 __all__ = ["get_dll_file", "version_info"]
 
+
 def _findlib(libnames, path=None):
     """Internal helper function to find the requested DLL(s)."""
     platform = sys.platform
@@ -59,6 +60,9 @@ class _DLL(object):
                 warnings.warn(exc, ImportWarning)
         if self._dll is None:
             raise RuntimeError("could not load any library for %s" % libinfo)
+        if path is not None and sys.platform in ("win32", "cli") and \
+            path in self._libfile:
+            os.environ["PATH"] += ";%s" % path
 
     def bind_function(self, funcname, args=None, returns=None):
         """Binds the passed argument and return value types to the specified

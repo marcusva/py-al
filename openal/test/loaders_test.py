@@ -5,6 +5,7 @@ from .. import al, loaders
 
 RESPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "resources")
 
+
 class OpenALAudioTest(unittest.TestCase):
 
     def test_load_file(self):
@@ -22,12 +23,6 @@ class OpenALAudioTest(unittest.TestCase):
         self.assertEqual(snddata.format, al.AL_FORMAT_MONO16)
         self.assertEqual(snddata.frequency, 44100)
         self.assertEqual(snddata.size, 122880)
-
-    @unittest.skip("not implemented")
-    def test_load_ogg_file(self):
-        pass
-        #oggfile = os.path.join(RESPATH, "hey.ogg")
-        #snddata = loaders.load_ogg_file(oggfile)
 
     @unittest.skip("not implemented")
     def test_load_stream(self):
